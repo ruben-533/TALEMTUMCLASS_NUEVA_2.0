@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: talemtumclass
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/lumen/health
+    envVars:
+      - key: NODE_VERSION
+        value: 24.0.0
+      - key: GEMINI_MODEL
+        value: gemini-3.5-flash
+      - key: LUMEN_RATE_LIMIT
+        value: "30"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ADMIN_EMAIL
+        value: admin@talemtumclass.com
+      - key: ADMIN_PASSWORD
+        sync: false
