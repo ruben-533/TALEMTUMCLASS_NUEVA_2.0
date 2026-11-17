@@ -1,19 +1,40 @@
 import { useEffect, useState } from 'react'
 import type { NavProps } from '@/app/navigation'
 import { Logo } from '@/components/ui'
+import { updateReservationStatus } from '@/lib/bookings'
 
 export default function VirtualSession(props: NavProps) {
+  const booking = props.activeBooking
+  const tutorName = booking?.tutorNombre ?? props.selectedTutor.name
+  const tutorAvatar = booking?.tutorAvatar || props.selectedTutor.avatar
+  const subject = booking?.materia ?? props.selectedTutor.subject
+
   const [mic, setMic] = useState(true)
   const [camera, setCamera] = useState(true)
   const [sharing, setSharing] = useState(false)
   const [chatOpen, setChatOpen] = useState(() => window.innerWidth >= 1024)
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState([
-    { from: 'them', text: '¡Hola Carlos! ¿Me escuchas bien?' },
-    { from: 'me', text: 'Sí, perfecto. ¿Empezamos con derivadas?' },
+    { from: 'them', text: `¡Hola ${props.userName}! ¿Me escuchas bien?` },
+    { from: 'me', text: 'Sí, perfecto. ¿Empezamos?' },
     { from: 'them', text: 'Claro, te comparto la pantalla con los ejercicios.' },
   ])
   const [seconds, setSeconds] = useState(0)
+  const [finishing, setFinishing] = useState(false)
+
+  const finish = async () => {
+    if (finishing) return
+    setFinishing(true)
+    if (booking && props.isAuthenticated) {
+      try {
+        const updated = await updateReservationStatus(booking.id, 'completada')
+        props.setActiveBooking(updated)
+      } catch {
+        // Aunque falle el cambio de estado, permitimos calificar la sesión.
+      }
+    }
+    props.navigate('rating')
+  }
 
   useEffect(() => {
     const timer = window.setInterval(() => setSeconds((value) => value + 1), 1000)
@@ -34,8 +55,8 @@ export default function VirtualSession(props: NavProps) {
         <div className="flex items-center gap-3">
           <Logo size="sm" showWordmark={false} />
           <div>
-            <p className="text-sm font-600">{props.selectedTutor.subject}</p>
-            <p className="text-[11px] text-white/50">{props.selectedTutor.name} · {props.userName}</p>
+            <p className="text-sm font-600">{subject}</p>
+            <p className="text-[11px] text-white/50">{tutorName} · {props.userName}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 text-xs">
@@ -50,8 +71,8 @@ export default function VirtualSession(props: NavProps) {
         <main className="relative flex min-w-0 flex-1 flex-col">
           <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-gradient-to-br from-[#1e1b4b] via-[#14122b] to-[#0f0d1e]">
             <div className="flex flex-col items-center">
-              <img src={props.selectedTutor.avatar} alt={props.selectedTutor.name} className="h-28 w-28 rounded-full border-4 border-white/10 object-cover sm:h-36 sm:w-36" />
-              <p className="mt-4 font-600">{props.selectedTutor.name}</p>
+              <img src={tutorAvatar} alt={tutorName} className="h-28 w-28 rounded-full border-4 border-white/10 object-cover sm:h-36 sm:w-36" />
+              <p className="mt-4 font-600">{tutorName}</p>
               <p className="mt-1 text-xs text-white/50">{camera ? 'Cámara activa' : 'Cámara apagada'}</p>
             </div>
 
@@ -85,8 +106,8 @@ export default function VirtualSession(props: NavProps) {
             <button onClick={() => setChatOpen(!chatOpen)} className="flex h-11 items-center gap-2 rounded-full bg-white/10 px-4 text-xs font-500 transition-colors hover:bg-white/15 lg:hidden">
               💬 Chat
             </button>
-            <button onClick={() => props.navigate('rating')} className="flex h-11 items-center gap-2 rounded-full bg-red-500 px-4 text-xs font-600 transition-colors hover:bg-red-600">
-              📞 <span className="hidden sm:inline">Finalizar</span>
+            <button onClick={finish} disabled={finishing} className="flex h-11 items-center gap-2 rounded-full bg-red-500 px-4 text-xs font-600 transition-colors hover:bg-red-600 disabled:opacity-60">
+              📞 <span className="hidden sm:inline">{finishing ? 'Guardando...' : 'Finalizar'}</span>
             </button>
           </div>
         </main>

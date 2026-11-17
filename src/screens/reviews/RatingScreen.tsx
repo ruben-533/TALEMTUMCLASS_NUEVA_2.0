@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { NavProps } from '@/app/navigation'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { Badge, Stars } from '@/components/ui'
+import { formatReservationDate, rateReservation } from '@/lib/bookings'
 
 const TAGS = ['Explica claramente', 'Puntual', 'Buena comunicación', 'Domina el tema', 'Recomendaría este tutor']
 
@@ -11,10 +12,43 @@ export default function RatingScreen(props: NavProps) {
   const [tags, setTags] = useState<string[]>([])
   const [comment, setComment] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  const booking = props.activeBooking
+  const tutorName = booking?.tutorNombre ?? props.selectedTutor.name
+  const tutorAvatar = booking?.tutorAvatar || props.selectedTutor.avatar
+  const subject = booking?.materia ?? props.selectedTutor.subject
+  const sessionLabel = booking
+    ? `${formatReservationDate(booking.fecha)} · ${booking.hora}`
+    : 'Sesión de prueba'
 
   const toggleTag = (tag: string) => {
     setTags((prev) => (prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag]))
   }
+
+  const submit = async () => {
+    if (rating === 0 || saving) return
+    setError('')
+
+    // Sin una reserva real (invitado) se mantiene el recorrido de demostración.
+    if (!props.isAuthenticated || !booking) {
+      setSubmitted(true)
+      return
+    }
+
+    setSaving(true)
+    try {
+      const updated = await rateReservation(booking.id, rating, comment)
+      props.setActiveBooking(updated)
+      setSubmitted(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo guardar tu valoración.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
 
   if (submitted) {
     return (
@@ -24,7 +58,7 @@ export default function RatingScreen(props: NavProps) {
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100 text-4xl">⭐</div>
             <h1 className="text-2xl font-700 text-[#221A3A]">¡Gracias por tu valoración!</h1>
             <p className="mt-2 text-gray-500">
-              Tu opinión ayuda a otros estudiantes a elegir mejor y actualiza la reputación de {props.selectedTutor.name}.
+              Tu opinión ayuda a otros estudiantes a elegir mejor y actualiza la reputación de {tutorName}.
             </p>
             <div className="mt-5 rounded-2xl border border-[#EAE1CD] bg-[#FFFDF8] p-5">
               <Stars rating={rating} size="lg" />
@@ -50,10 +84,10 @@ export default function RatingScreen(props: NavProps) {
       <div className="mx-auto max-w-xl p-5 sm:p-6 lg:p-8">
         <div className="rounded-2xl border border-[#EAE1CD] bg-[#FFFDF8] p-6 sm:p-8">
           <div className="text-center">
-            <img src={props.selectedTutor.avatar} alt={props.selectedTutor.name} className="mx-auto h-16 w-16 rounded-full object-cover" />
+            <img src={tutorAvatar} alt={tutorName} className="mx-auto h-16 w-16 rounded-full object-cover" />
             <h1 className="mt-3 text-xl font-700 text-[#221A3A]">¿Cómo fue tu experiencia?</h1>
-            <p className="mt-1 text-sm text-gray-500">Tutoría de {props.selectedTutor.subject} con {props.selectedTutor.name}</p>
-            <div className="mt-1 text-xs text-gray-400">Lunes 2 de septiembre · 10:00 AM</div>
+            <p className="mt-1 text-sm text-gray-500">Tutoría de {subject} con {tutorName}</p>
+            <div className="mt-1 text-xs text-gray-400">{sessionLabel}</div>
           </div>
 
           <div className="mt-6 flex justify-center gap-2" role="radiogroup" aria-label="Calificación">
@@ -110,12 +144,18 @@ export default function RatingScreen(props: NavProps) {
             Tu valoración se publicará de forma anónima y actualizará el perfil del tutor.
           </div>
 
+          {error && (
+            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
+
           <button
-            disabled={rating === 0}
-            onClick={() => setSubmitted(true)}
+            disabled={rating === 0 || saving}
+            onClick={submit}
             className="mt-5 w-full rounded-xl bg-[#5548C8] py-4 font-600 text-white transition-colors hover:bg-[#4338CA] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Enviar valoración
+            {saving ? 'Guardando valoración...' : 'Enviar valoración'}
           </button>
           <button onClick={() => props.navigate('history')} className="mt-3 w-full text-center text-sm text-gray-400 hover:text-gray-600">
             Omitir por ahora

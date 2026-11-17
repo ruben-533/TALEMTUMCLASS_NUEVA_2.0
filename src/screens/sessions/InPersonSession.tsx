@@ -1,11 +1,35 @@
+import { useState } from 'react'
 import type { NavProps } from '@/app/navigation'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { Badge, PageHeader } from '@/components/ui'
 import { UPCOMING_SESSION } from '@/data/sessions'
+import { formatReservationDate, updateReservationStatus } from '@/lib/bookings'
 
 export default function InPersonSession(props: NavProps) {
   const tutor = props.selectedTutor
+  const booking = props.activeBooking
+  const tutorName = booking?.tutorNombre ?? tutor.name
+  const tutorAvatar = booking?.tutorAvatar || tutor.avatar
+  const subject = booking?.materia ?? tutor.subject
+  const sessionDate = booking ? formatReservationDate(booking.fecha) : UPCOMING_SESSION.date
+  const sessionTime = booking ? `${booking.hora} · ${booking.duracion} min` : UPCOMING_SESSION.time
+  const sessionDuration = booking ? `${booking.duracion} minutos` : '60 minutos'
   const location = `${tutor.location} · lugar acordado con el tutor`
+  const [finishing, setFinishing] = useState(false)
+
+  const finish = async () => {
+    if (finishing) return
+    setFinishing(true)
+    if (booking && props.isAuthenticated) {
+      try {
+        const updated = await updateReservationStatus(booking.id, 'completada')
+        props.setActiveBooking(updated)
+      } catch {
+        // Si falla, la valoración igualmente puede completar la reserva.
+      }
+    }
+    props.navigate('rating')
+  }
 
   return (
     <DashboardLayout {...props} activeScreen="inperson-session">
@@ -20,10 +44,10 @@ export default function InPersonSession(props: NavProps) {
           <div className="space-y-5 lg:col-span-2">
             <div className="rounded-2xl border border-[#EAE1CD] bg-[#FFFDF8] p-5 sm:p-6">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-                <img src={tutor.avatar} alt={tutor.name} className="h-20 w-20 rounded-2xl object-cover" />
+                <img src={tutorAvatar} alt={tutorName} className="h-20 w-20 rounded-2xl object-cover" />
                 <div className="flex-1">
-                  <h2 className="text-lg font-700 text-[#221A3A]">{tutor.name}</h2>
-                  <p className="text-sm text-gray-500">{tutor.subject}</p>
+                  <h2 className="text-lg font-700 text-[#221A3A]">{tutorName}</h2>
+                  <p className="text-sm text-gray-500">{subject}</p>
                   <div className="mt-1 text-xs text-gray-400">📍 {tutor.location} · {tutor.experience} de experiencia</div>
                 </div>
                 <div className="rounded-xl bg-[#F7F3E9] px-4 py-3 text-sm">
@@ -34,9 +58,9 @@ export default function InPersonSession(props: NavProps) {
 
               <div className="mt-5 grid grid-cols-2 gap-3 border-t border-gray-50 pt-5 sm:grid-cols-4">
                 {[
-                  ['Fecha', UPCOMING_SESSION.date],
-                  ['Hora', UPCOMING_SESSION.time],
-                  ['Duración', '60 minutos'],
+                  ['Fecha', sessionDate],
+                  ['Hora', sessionTime],
+                  ['Duración', sessionDuration],
                   ['Modalidad', '📍 Presencial'],
                 ].map(([label, value]) => (
                   <div key={label}>
@@ -92,7 +116,7 @@ export default function InPersonSession(props: NavProps) {
 
             <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-5">
               <h3 className="font-700 text-[#221A3A]">Información de contacto</h3>
-              <p className="mt-2 text-sm text-gray-600">{tutor.name}</p>
+              <p className="mt-2 text-sm text-gray-600">{tutorName}</p>
               <p className="text-sm text-gray-600">{tutor.location}</p>
               <button onClick={() => props.navigate('messages')} className="mt-3 w-full rounded-xl bg-[#FFFDF8] py-2.5 text-sm font-500 text-[#5548C8] hover:bg-indigo-100">
                 Enviar mensaje
@@ -114,6 +138,13 @@ export default function InPersonSession(props: NavProps) {
                   </div>
                 ))}
               </div>
+              <button
+                onClick={finish}
+                disabled={finishing}
+                className="mt-4 w-full rounded-xl bg-[#5548C8] py-2.5 text-sm font-600 text-white hover:bg-[#4338CA] disabled:opacity-60"
+              >
+                {finishing ? 'Guardando...' : 'Finalizar tutoría'}
+              </button>
             </div>
           </div>
         </div>
