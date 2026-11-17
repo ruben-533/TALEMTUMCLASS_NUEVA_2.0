@@ -1,0 +1,20 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "dist": true,
+      "node_modules": true
+    },
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    "terminal.integrated.env.windows": {
+      "PATH": "C:\\Program Files\\nodejs;${env:PATH}"
+    }
+  }
+}

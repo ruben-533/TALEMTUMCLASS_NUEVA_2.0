@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Entrega — Registro y autenticación con SQLite | TALEMTUMCLASS</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #221A3A;
+    line-height: 1.55;
+    font-size: 11pt;
+    margin: 0;
+  }
+  h1, h2, h3 { color: #221A3A; line-height: 1.2; }
+  h1 { font-size: 26pt; margin: 0 0 8px; }
+  h2 { font-size: 16pt; margin: 28px 0 10px; border-bottom: 2px solid #C6A15B; padding-bottom: 6px; }
+  h3 { font-size: 12.5pt; margin: 18px 0 6px; }
+  p { margin: 6px 0; }
+  ul, ol { margin: 6px 0 6px 20px; padding: 0; }
+  li { margin: 3px 0; }
+  .cover {
+    min-height: 245mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    page-break-after: always;
+    background: linear-gradient(150deg, #FBF8F1 0%, #F7F3E9 45%, #EFE7D6 100%);
+    border: 1px solid #EAE1CD;
+    border-radius: 18px;
+    padding: 28mm 22mm;
+  }
+  .cover .eyebrow { color: #8A6A22; font-weight: 700; letter-spacing: 3px; font-size: 9pt; text-transform: uppercase; }
+  .cover h1 { font-size: 34pt; margin-top: 14px; }
+  .cover .subtitle { font-size: 14pt; color: #4B4360; max-width: 130mm; }
+  .cover .meta { margin-top: 30mm; font-size: 10pt; color: #6B5A3E; }
+  .cover .rule { width: 60mm; height: 4px; background: #C6A15B; margin: 18px 0; border-radius: 2px; }
+  .badge { display: inline-block; background: #F3E9D2; color: #8A6A22; border: 1px solid #E8D5A8; border-radius: 999px; padding: 3px 10px; font-size: 9pt; font-weight: 600; margin: 2px 4px 2px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 9.8pt; }
+  th, td { border: 1px solid #EAE1CD; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #F7F3E9; color: #3A3348; }
+  code, pre { font-family: Consolas, "Courier New", monospace; }
+  code { background: #F3E9D2; color: #7A5C18; padding: 1px 4px; border-radius: 4px; font-size: 9.5pt; }
+  pre { background: #221A3A; color: #F7F3E9; padding: 10px 12px; border-radius: 8px; overflow: hidden; font-size: 8.8pt; line-height: 1.45; white-space: pre-wrap; }
+  pre code { background: transparent; color: inherit; padding: 0; }
+  .note { background: #FBF7EE; border-left: 4px solid #C6A15B; padding: 9px 12px; margin: 10px 0; font-size: 10pt; }
+  .success { background: #F0F8F1; border-left: 4px solid #4D9A63; padding: 9px 12px; margin: 10px 0; font-size: 10pt; }
+  .screenshot { margin: 10px 0 18px; page-break-inside: avoid; }
+  .screenshot img { width: 100%; border: 1px solid #EAE1CD; border-radius: 8px; }
+  .screenshot .caption { font-size: 8.8pt; color: #6B5A3E; margin-top: 5px; text-align: center; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .kpi { border: 1px solid #EAE1CD; border-radius: 10px; padding: 9px 11px; background: #FFFDF8; }
+  .kpi strong { display: block; font-size: 14pt; }
+  .page-break { page-break-before: always; }
+  .muted { color: #6B5A3E; font-size: 9.5pt; }
+  .toc li { margin: 4px 0; }
+  footer { margin-top: 24px; border-top: 1px solid #EAE1CD; padding-top: 8px; font-size: 8.5pt; color: #8B8069; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="eyebrow">TALEMTUMCLASS · Entrega académica</div>
+  <div class="rule"></div>
+  <h1>Registro y autenticación de usuarios con SQLite</h1>
+  <p class="subtitle">Implementación de una tabla de usuarios, formulario de registro, inicio de sesión con validaciones y CRUD de categorías protegido por sesión.</p>
+  <div class="meta">
+    <p><strong>Proyecto:</strong> TALEMTUMCLASS — plataforma de tutorías</p>
+    <p><strong>Tecnologías:</strong> Node.js · Express · SQLite · React · TypeScript · Vite</p>
+    <p><strong>Base de datos:</strong> <code>database/talentumclass.db</code></p>
+    <p><strong>Fecha:</strong> noviembre de 2026</p>
+  </div>
+</section>
+
+<h2>1. Objetivo de la entrega</h2>
+<p>Agregar al proyecto una funcionalidad completa de <strong>usuarios y autenticación</strong>, inspirada en el CRUD de categorías visto en clase, de modo que una persona pueda:</p>
+<ol>
+  <li>Crear una cuenta desde un formulario de registro.</li>
+  <li>Autenticarse con su correo y contraseña.</li>
+  <li>Acceder al CRUD de categorías solo con una sesión activa.</li>
+  <li>Recibir validaciones claras en cada paso del proceso.</li>
+</ol>
+
+<div class="note">
+  <strong>Resultado:</strong> el registro, el login, la sesión y el CRUD de categorías funcionan contra una base de datos SQLite real. Las contraseñas nunca se guardan en texto plano.
+</div>
+
+<h2>2. Tecnologías utilizadas</h2>
+<table>
+  <tr><th>Capa</th><th>Tecnología</th><th>Uso en esta funcionalidad</th></tr>
+  <tr><td>Frontend</td><td>React 19 + TypeScript + Vite</td><td>Formularios de registro/login, validaciones visuales, pantalla CRUD y manejo de sesión.</td></tr>
+  <tr><td>Estilos</td><td>Tailwind CSS 4</td><td>Interfaz premium en marfil, violeta y dorado.</td></tr>
+  <tr><td>Backend</td><td>Node.js + Express</td><td>API REST de autenticación, usuarios y categorías.</td></tr>
+  <tr><td>Base de datos</td><td>SQLite (<code>node:sqlite</code>)</td><td>Tablas <code>usuarios</code>, <code>sesiones</code> y <code>categorias</code>.</td></tr>
+  <tr><td>Seguridad</td><td><code>node:crypto</code></td><td>Hash scrypt de contraseñas, tokens aleatorios y cookies httpOnly.</td></tr>
+</table>
+
+<h2>3. Arquitectura</h2>
+<pre><code>Navegador (React)
+   │  fetch /api/auth/*  y  /api/categorias
+   ▼
+Servidor Express (server/index.js)
+   │  valida datos, verifica sesión y aplica reglas
+   ▼
+SQLite (database/talentumclass.db)
+   ├─ usuarios
+   ├─ sesiones
+   └─ categorias</code></pre>
+<p>La clave de Gemini y la base de datos permanecen siempre en el servidor. El navegador solo recibe la cookie de sesión <code>httpOnly</code>.</p>
+
+<h2>4. Base de datos</h2>
+<h3>4.1 Tabla <code>usuarios</code></h3>
+<table>
+  <tr><th>Campo</th><th>Tipo</th><th>Regla</th></tr>
+  <tr><td><code>id</code></td><td>INTEGER</td><td>Clave primaria autoincremental.</td></tr>
+  <tr><td><code>nombre</code></td><td>TEXT</td><td>Obligatorio, 2–60 caracteres.</td></tr>
+  <tr><td><code>apellido</code></td><td>TEXT</td><td>Obligatorio, 2–60 caracteres.</td></tr>
+  <tr><td><code>email</code></td><td>TEXT</td><td>Único, sin distinguir mayúsculas, hasta 160 caracteres.</td></tr>
+  <tr><td><code>password_hash</code></td><td>TEXT</td><td>Hash scrypt con sal aleatoria. Nunca texto plano.</td></tr>
+  <tr><td><code>rol</code></td><td>TEXT</td><td><code>estudiante</code>, <code>tutor</code> o <code>admin</code>.</td></tr>
+  <tr><td><code>ciudad</code></td><td>TEXT</td><td>Opcional. Editable desde el perfil.</td></tr>
+  <tr><td><code>telefono</code></td><td>TEXT</td><td>Opcional. Se guarda desde el perfil.</td></tr>
+  <tr><td><code>biografia</code></td><td>TEXT</td><td>Opcional, hasta 500 caracteres.</td></tr>
+  <tr><td><code>creado_en</code></td><td>TEXT</td><td>Fecha de registro automática.</td></tr>
+  <tr><td><code>ultimo_acceso</code></td><td>TEXT</td><td>Se actualiza en cada login.</td></tr>
+</table>
+
+<h3>4.2 Tabla <code>sesiones</code></h3>
+<p>Guarda el <strong>hash SHA-256</strong> del token de sesión, el usuario y la fecha de expiración. El token original solo vive en la cookie del navegador. Las sesiones vencidas se eliminan automáticamente.</p>
+
+<h3>4.3 Tabla <code>categorias</code></h3>
+<table>
+  <tr><th>Campo</th><th>Tipo</th><th>Regla</th></tr>
+  <tr><td><code>id</code></td><td>INTEGER</td><td>Clave primaria.</td></tr>
+  <tr><td><code>nombre</code></td><td>TEXT</td><td>Único, 2–60 caracteres.</td></tr>
+  <tr><td><code>descripcion</code></td><td>TEXT</td><td>Hasta 240 caracteres.</td></tr>
+  <tr><td><code>icono</code></td><td>TEXT</td><td>Emoji o símbolo de la categoría.</td></tr>
+  <tr><td><code>creado_en</code> / <code>actualizado_en</code></td><td>TEXT</td><td>Auditoría básica.</td></tr>
+</table>
+
+<h2 class="page-break">5. Registro de usuarios</h2>
+<p>El formulario de registro está en <code>#/register</code>. Al enviarlo, el frontend llama a <code>POST /api/auth/register</code> y el servidor ejecuta estas comprobaciones:</p>
+<ul>
+  <li>Nombre y apellido obligatorios, entre 2 y 60 caracteres y solo letras/espacios/guiones.</li>
+  <li>Correo con formato válido y no repetido (comparación sin distinguir mayúsculas).</li>
+  <li>Contraseña de 8 a 72 caracteres, con al menos una letra y un número.</li>
+  <li>Contraseña y confirmación deben coincidir (validación en el cliente).</li>
+  <li>Rechazo de contraseñas demasiado comunes.</li>
+  <li>Límite de intentos por IP para evitar abuso.</li>
+</ul>
+<p>Los errores se muestran debajo de cada campo y en un resumen general. Si todo es correcto, se crea el usuario, se abre una sesión y se pasa a la selección de rol.</p>
+
+<pre><code>// server/index.js
+app.post('/api/auth/register', authRateLimit, async (req, res) =&gt; {
+  const { errors, data } = validateRegistration(req.body)
+  if (errors.length) return validationError(res, errors)
+
+  const existing = db.prepare('SELECT id FROM usuarios WHERE email = ?').get(data.email)
+  if (existing) return res.status(409).json({ code: 'EMAIL_IN_USE', ... })
+
+  const passwordHash = await hashPassword(data.password)
+  const result = db.prepare(`
+    INSERT INTO usuarios (nombre, apellido, email, password_hash, rol, ciudad)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(data.nombre, data.apellido, data.email, passwordHash, data.rol, data.ciudad)
+
+  const { token } = createSession(Number(result.lastInsertRowid))
+  setSessionCookie(req, res, token)
+  res.status(201).json({ user: publicUser(user) })
+})</code></pre>
+
+<h2>6. Inicio de sesión y sesión segura</h2>
+<ol>
+  <li>El usuario escribe correo y contraseña en <code>#/login</code>.</li>
+  <li>El servidor busca el correo y compara la contraseña con <code>scrypt</code> y <code>timingSafeEqual</code>.</li>
+  <li>Si las credenciales son incorrectas, responde con un mensaje genérico para no revelar si el correo existe.</li>
+  <li>Si son correctas, genera un token aleatorio de 32 bytes, guarda su hash SHA-256 en <code>sesiones</code> y envía una cookie <code>httpOnly</code>, <code>SameSite=Lax</code>, con 7 días de vigencia.</li>
+  <li>El frontend consulta <code>GET /api/auth/me</code> al cargar para recuperar la sesión.</li>
+</ol>
+
+<pre><code>// server/auth.js — hash de contraseña
+export async function hashPassword(password) {
+  const salt = randomBytes(16)
+  const derived = await scrypt(password, salt, 64, { N: 16384, r: 8, p: 1 })
+  return `scrypt$16384$8$1$${salt.toString('hex')}$${derived.toString('hex')}`
+}
+
+// Cookie de sesión
+res.setHeader('Set-Cookie', [
+  `talentum_session=${token}`,
+  'Path=/', 'HttpOnly', 'SameSite=Lax', 'Max-Age=604800'
+].join('; '))</code></pre>
+
+<div class="success">
+  <strong>Seguridad aplicada:</strong> contraseñas con scrypt + sal, cookies httpOnly, token de sesión hasheado en la base, consultas SQL preparadas, validación en servidor y límite de intentos.
+</div>
+
+<h2>7. CRUD de categorías protegido por sesión</h2>
+<p>La pantalla <code>#/categories</code> implementa las cuatro operaciones del CRUD:</p>
+<table>
+  <tr><th>Operación</th><th>Método y ruta</th><th>Protección</th></tr>
+  <tr><td>Listar</td><td><code>GET /api/categorias</code></td><td>Público</td></tr>
+  <tr><td>Crear</td><td><code>POST /api/categorias</code></td><td>Sesión requerida</td></tr>
+  <tr><td>Editar</td><td><code>PUT /api/categorias/:id</code></td><td>Sesión requerida</td></tr>
+  <tr><td>Eliminar</td><td><code>DELETE /api/categorias/:id</code></td><td>Sesión requerida</td></tr>
+</table>
+<p>Si no hay sesión, el listado sigue visible pero el formulario y los botones de edición/eliminación se ocultan y aparece un aviso con accesos directos a login y registro. El servidor también rechaza cualquier escritura sin sesión, por lo que la protección no depende solo de la interfaz.</p>
+
+<h2 class="page-break">8. Capturas de la ejecución</h2>
+
+<div class="screenshot">
+  <img src="capturas/01-registro.png" alt="Formulario de registro" />
+  <div class="caption">Figura 1. Formulario de registro con los campos solicitados.</div>
+</div>
+
+<div class="screenshot">
+  <img src="capturas/02-login.png" alt="Formulario de inicio de sesión" />
+  <div class="caption">Figura 2. Inicio de sesión con correo y contraseña. Se muestra la cuenta de administrador de prueba.</div>
+</div>
+
+<div class="screenshot">
+  <img src="capturas/03-validaciones.png" alt="Validaciones del formulario" />
+  <div class="caption">Figura 3. Validaciones por campo: nombre/apellido demasiado cortos, correo inválido y contraseña sin letras.</div>
+</div>
+
+<div class="screenshot">
+  <img src="capturas/04-categorias-crud.png" alt="CRUD de categorías" />
+  <div class="caption">Figura 4. CRUD de categorías con sesión activa: formulario de creación, listado, edición y eliminación.</div>
+</div>
+
+<div class="screenshot">
+  <img src="capturas/05-categoria-creada.png" alt="Categoría creada" />
+  <div class="caption">Figura 5. Categoría creada desde la interfaz y almacenada en SQLite.</div>
+</div>
+
+<div class="screenshot">
+  <img src="capturas/06-admin-usuarios.png" alt="Usuarios reales en el panel de administración" />
+  <div class="caption">Figura 6. Panel de administración mostrando los usuarios reales leídos desde SQLite.</div>
+</div>
+
+<h2>9. Cómo ejecutar el proyecto</h2>
+<pre><code># 1. Instalar dependencias (solo la primera vez)
+npm install
+
+# 2. Configurar variables de entorno
+# Copia .env.example a .env y completa GEMINI_API_KEY si usarás Lumen IA.
+
+# 3. Arrancar frontend + API
+npm run dev
+
+# 4. Abrir en el navegador
+http://localhost:5173/#/register</code></pre>
+
+<div class="note">
+  <strong>Cuenta de administrador inicial:</strong><br />
+  Correo: <code>admin@talemtumclass.com</code><br />
+  Contraseña: <code>Admin1234</code><br />
+  Se crea automáticamente al arrancar. Cambiar en <code>.env</code> con <code>ADMIN_EMAIL</code> y <code>ADMIN_PASSWORD</code> antes de publicar.
+</div>
+
+<p class="muted">La base de datos se crea sola en <code>database/talentumclass.db</code>. Para reiniciar los datos, detén el servidor, elimina ese archivo y vuelve a iniciar: se recrean las 14 categorías iniciales y el administrador.</p>
+
+<h2>10. Pruebas realizadas</h2>
+<table>
+  <tr><th>Prueba</th><th>Resultado</th></tr>
+  <tr><td>Registro con datos válidos</td><td>201 · usuario creado y sesión iniciada</td></tr>
+  <tr><td>Registro con correo repetido</td><td>409 · mensaje “Este correo ya está registrado”</td></tr>
+  <tr><td>Registro con nombre/apellido inválidos</td><td>400 · errores por campo</td></tr>
+  <tr><td>Registro con correo inválido</td><td>400 · “Escribe un correo electrónico válido”</td></tr>
+  <tr><td>Contraseña corta o sin número</td><td>400 · regla de contraseña explicada</td></tr>
+  <tr><td>Contraseñas que no coinciden</td><td>Error mostrado antes de enviar</td></tr>
+  <tr><td>Login con contraseña incorrecta</td><td>401 · mensaje genérico</td></tr>
+  <tr><td>Login con credenciales válidas</td><td>200 · cookie httpOnly y sesión activa</td></tr>
+  <tr><td>Crear/editar/eliminar categoría con sesión</td><td>201 / 200 / 204 · cambios reflejados en la interfaz</td></tr>
+  <tr><td>Crear categoría sin sesión</td><td>401 · operación rechazada por el servidor</td></tr>
+  <tr><td>Cerrar sesión</td><td>Cookie eliminada y formulario CRUD oculto</td></tr>
+  <tr><td>TypeScript y build de producción</td><td><code>npm run typecheck</code> y <code>npm run build</code> sin errores</td></tr>
+</table>
+
+<h2>11. Enlaces de la entrega</h2>
+<table>
+  <tr><th>Recurso</th><th>Enlace</th></tr>
+  <tr><td>Repositorio público de GitHub</td><td>Completar antes de publicar: <code>https://github.com/&lt;usuario&gt;/TALEMTUCLASS</code></td></tr>
+  <tr><td>Despliegue de la aplicación</td><td>Completar después del despliegue (Render, Railway, Fly.io, etc.)</td></tr>
+  <tr><td>Documento PDF</td><td>Este archivo</td></tr>
+</table>
+
+<h2>12. Conclusiones</h2>
+<p>La aplicación pasó de tener un login simulado a un flujo real de usuarios con persistencia en SQLite. La separación entre frontend, API y base de datos permite mantener la seguridad de las credenciales, validar tanto en cliente como en servidor y proteger el CRUD de categorías con una sesión verificada.</p>
+<p>Como siguientes pasos se recomienda restringir la escritura de categorías al rol <code>admin</code>, añadir recuperación de contraseña por correo y migrar a PostgreSQL si la aplicación se publica con varios usuarios concurrentes.</p>
+
+<footer>TALEMTUMCLASS · Entrega de registro y autenticación con SQLite · Documento generado desde <code>docs/entrega-autenticacion.html</code></footer>
+
+</body>
+</html>
