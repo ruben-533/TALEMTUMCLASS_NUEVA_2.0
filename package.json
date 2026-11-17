@@ -3,6 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "description": "TALEMTUMCLASS — plataforma de tutorías virtuales y presenciales (prototipo funcional).",
   "scripts": {
     "dev": "concurrently -k -n API,WEB -c magenta,cyan \"npm:dev:api\" \"npm:dev:web\"",
