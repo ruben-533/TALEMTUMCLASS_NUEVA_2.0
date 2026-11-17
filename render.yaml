@@ -10,7 +10,7 @@ services:
       - key: NODE_VERSION
         value: 24.0.0
       - key: GEMINI_MODEL
-        value: gemini-3.5-flash
+        value: gemini-3.1-flash-lite
       - key: LUMEN_RATE_LIMIT
         value: "30"
       - key: GEMINI_API_KEY

@@ -29,7 +29,7 @@ const app = express()
 
 const PORT = Number(process.env.PORT) || 3001
 const GEMINI_API_KEY = (process.env.GEMINI_API_KEY || '').trim()
-const GEMINI_MODEL = (process.env.GEMINI_MODEL || 'gemini-3.5-flash').trim()
+const GEMINI_MODEL = (process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite').trim()
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`
 
 const MAX_MESSAGES = 24
